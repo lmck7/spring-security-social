@@ -1,0 +1,35 @@
+group = 'lmck'
+version = '1.0.0'    
+
+apply plugin: 'java'
+sourceCompatibility=1.8
+targetCompatibility=1.8   
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+    maven { url 'http://repo.spring.io/milestone' }
+    maven { url 'http://repo.spring.io/snapshot' }
+    maven { url 'http://repo.maven.apache.org/maven2' }
+}
+   
+dependencies {
+    compile "org.apache.commons:commons-lang3:${commons_lang_version}"
+    compile "org.springframework.security:spring-security-config:${spring_security_version}"
+    compile "org.springframework.security:spring-security-data:${spring_security_version}"
+    compile "org.springframework.security:spring-security-web:${spring_security_version}"
+    compile "org.springframework.social:spring-social-security:${spring_social_security_version}"
+    compileOnly "javax.servlet:javax.servlet-api:${servlet_api_version}"
+    
+    testCompile "junit:junit:${junit_version}"
+    testCompile "org.mockito:mockito-core:${mockito_version}"    
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.0'
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.social', module: 'spring-social-web'
+}
