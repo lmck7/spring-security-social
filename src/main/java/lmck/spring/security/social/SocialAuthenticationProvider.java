@@ -36,25 +36,30 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
 	}
 	
 	@Override
-	public Authentication authenticate(Authentication authentication) {
-		SocialAuthenticationToken authRequest = (SocialAuthenticationToken) authentication;
-       	ConnectionFactory<?> connFactory = connectionFactoryLocator.getConnectionFactory(authRequest.getProvider());
-    	if (connFactory instanceof OAuth2ConnectionFactory) {
-    		OAuth2ConnectionFactory<?> oauth2ConnFactory = (OAuth2ConnectionFactory<?>) connFactory;
-    		AccessGrant accessGrant = new AccessGrant(authRequest.getCredentials().toString());
-    		Connection<?> conn = oauth2ConnFactory.createConnection(accessGrant);
-    		UserProfile userProfile = conn.fetchUserProfile();
-    		String email = userProfile.getEmail();
-    		DynamicUserDetails userDetails = getUserDetails(email);
-    		if (userDetails == null) {
-    			throw new BadCredentialsException("Bad credentials");
-    		}
-    		socialUserDetailsChecker.check(userDetails, authRequest.getProvider());
-    		return new SocialAuthenticationToken(userDetails, authRequest.getCredentials().toString(), 
-    			authRequest.getProvider(), userDetails.getAuthorities());
-    	} else {
-    		throw new BadCredentialsException("Invalid authentication provider");
-    	}
+	public Authentication authenticate(Authentication authRequest) {
+		try {
+			SocialAuthenticationToken socialAuthRequest = (SocialAuthenticationToken) authRequest;
+	       	ConnectionFactory<?> connFactory = connectionFactoryLocator.getConnectionFactory(socialAuthRequest.getProvider());
+	    	if (connFactory instanceof OAuth2ConnectionFactory) {
+	    		OAuth2ConnectionFactory<?> oauth2ConnFactory = (OAuth2ConnectionFactory<?>) connFactory;
+	    		AccessGrant accessGrant = new AccessGrant(socialAuthRequest.getCredentials().toString());
+	    		Connection<?> conn = oauth2ConnFactory.createConnection(accessGrant);
+	    		UserProfile userProfile = conn.fetchUserProfile();
+	    		String email = userProfile.getEmail();
+	    		DynamicUserDetails userDetails = getUserDetails(email);
+	    		if (userDetails == null) {
+	    			throw new BadCredentialsException("Bad credentials");
+	    		}
+	    		socialUserDetailsChecker.check(userDetails, socialAuthRequest.getProvider());
+	    		return new SocialAuthenticationToken(userDetails, socialAuthRequest.getCredentials().toString(), 
+	    			socialAuthRequest.getProvider(), userDetails.getAuthorities());
+	    	} else {
+	    		throw new BadCredentialsException("Invalid authentication provider");
+	    	}			
+		} catch (Exception e) {
+			logger.info("Invalid social authentication request received", e);
+			throw new BadCredentialsException("Bad credentials");
+		}
 	}
 
 	@Override

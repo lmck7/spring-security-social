@@ -22,6 +22,7 @@ import org.springframework.social.connect.ConnectionFactoryLocator;
 import org.springframework.social.connect.UserProfile;
 import org.springframework.social.connect.support.OAuth2ConnectionFactory;
 import org.springframework.social.oauth2.AccessGrant;
+import org.springframework.web.client.HttpClientErrorException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SocialAuthenticationProviderTest {
@@ -86,4 +87,30 @@ public class SocialAuthenticationProviderTest {
 		socialAuthenticationProvider.authenticate(authRequest);
 	}
 
+	@Test(expected=BadCredentialsException.class)
+	public void authenticate_connectionToProviderFailed_shouldThrowBadCredentialsException() {
+		// given
+		when(connectionFactory.createConnection(any(AccessGrant.class))).thenThrow(HttpClientErrorException.class);
+		
+		// when
+		socialAuthenticationProvider.authenticate(authRequest);
+	}
+
+	@Test(expected=BadCredentialsException.class)
+	public void authenticate_unknownProvider_shouldThrowBadCredentialsException() {
+		// given
+		when(connectionFactoryLocator.getConnectionFactory("google")).thenThrow(IllegalArgumentException.class);
+		
+		// when
+		socialAuthenticationProvider.authenticate(authRequest);
+	}
+
+	@Test(expected=BadCredentialsException.class)
+	public void authenticate_unexpectedException_shouldThrowBadCredentialsException() {
+		// given
+		when(connectionFactory.createConnection(any(AccessGrant.class))).thenThrow(Exception.class);
+		
+		// when
+		socialAuthenticationProvider.authenticate(authRequest);
+	}	
 }
