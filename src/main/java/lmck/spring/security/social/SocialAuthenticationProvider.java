@@ -46,6 +46,9 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
     		UserProfile userProfile = conn.fetchUserProfile();
     		String email = userProfile.getEmail();
     		DynamicUserDetails userDetails = getUserDetails(email);
+    		if (userDetails == null) {
+    			throw new BadCredentialsException("Bad credentials");
+    		}
     		socialUserDetailsChecker.check(userDetails, authRequest.getProvider());
     		return new SocialAuthenticationToken(userDetails, authRequest.getCredentials().toString(), 
     			authRequest.getProvider(), userDetails.getAuthorities());

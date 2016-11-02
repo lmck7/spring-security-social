@@ -2,6 +2,7 @@ package lmck.spring.security.social;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -13,22 +14,34 @@ public class DefaultDynamicUserDetails implements DynamicUserDetails {
 	private String authenticator;
 	private String password;
 	private boolean enabled;
-	private List<GrantedAuthority> authorities;
-	private List<GrantedAuthority> groupAuthorities;
+	private boolean nonExpired;
+	private boolean nonLocked;
+	private boolean credentialsNonExpired;
+	private Collection<GrantedAuthority> authorities;
+	private Collection<GrantedAuthority> groupAuthorities;
 	
 	public DefaultDynamicUserDetails(String username, String password, 
 			boolean enabled, String authenticator,
-			List<GrantedAuthority> authorities,
-			List<GrantedAuthority> groupAuthorities) {
+			Collection<GrantedAuthority> authorities,
+			Collection<GrantedAuthority> groupAuthorities) {
+		this(username, password, enabled, authenticator, true, true, true, authorities, groupAuthorities);
+	}
+
+	public DefaultDynamicUserDetails(String username, String password, boolean enabled, 
+			String authenticator, boolean nonExpired, boolean nonLocked, boolean credentialsNonExpired,
+			Collection<GrantedAuthority> authorities, Collection<GrantedAuthority> groupAuthorities) {
 		super();
 		this.username = username;
 		this.authenticator = authenticator;
 		this.password = password;
 		this.enabled = enabled;
-		this.authorities = authorities;
-		this.groupAuthorities = groupAuthorities;
+		this.nonExpired = nonExpired;
+		this.nonLocked = nonLocked;
+		this.credentialsNonExpired = credentialsNonExpired;
+		this.authorities = authorities != null ? authorities : new HashSet<>();
+		this.groupAuthorities = groupAuthorities != null ? groupAuthorities : new HashSet<>();
 	}
-
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		List<GrantedAuthority> allAuthorities = new ArrayList<>(authorities);
@@ -53,17 +66,17 @@ public class DefaultDynamicUserDetails implements DynamicUserDetails {
 
 	@Override
 	public boolean isAccountNonExpired() {
-		return true;
+		return nonExpired;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
-		return true;
+		return nonLocked;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		return true;
+		return credentialsNonExpired;
 	}
 
 	@Override
