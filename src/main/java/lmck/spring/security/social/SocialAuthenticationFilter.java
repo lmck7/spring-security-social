@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -60,12 +61,14 @@ public class SocialAuthenticationFilter extends OncePerRequestFilter {
 				SocialAuthenticationToken authRequest = 
 						new SocialAuthenticationToken(authenticationToken, provider);
 				Authentication authResult = this.authenticationManager.authenticate(authRequest);
+				if (authResult == null) {
+					throw new BadCredentialsException("Bad credentials");
+				}
 				log.debug("Authentication success: " + authResult);
 				SecurityContextHolder.getContext().setAuthentication(authResult);
 			}
 
-		}
-		catch (Exception failed) {
+		} catch (Exception failed) {
 			SecurityContextHolder.clearContext();
 			log.debug("Authentication request for failed: " + failed);
 			response.setStatus(HttpStatus.UNAUTHORIZED.value());

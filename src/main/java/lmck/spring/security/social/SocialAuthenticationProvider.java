@@ -19,13 +19,15 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
 
 	private final ConnectionFactoryLocator connectionFactoryLocator;
 	private final DynamicUserDetailsService dynamicUserDetailsService;
+		
 	private DynamicUserDetailsChecker socialUserDetailsChecker =  (dynamicUserDetails, provider) -> {
 		new AccountStatusUserDetailsChecker().check(dynamicUserDetails);
 		if (!StringUtils.equals(provider, dynamicUserDetails.getAuthenticator())) {
 			throw new BadCredentialsException("Mismatched authentication provider");
 		}
 	};
-	
+	private UsernameExtractor usernameExtractor = (profile) -> profile.getEmail();
+
 	private Logger logger = LoggerFactory.getLogger(getClass());
 	
 	public SocialAuthenticationProvider(ConnectionFactoryLocator connectionFactoryLocator,
@@ -45,7 +47,7 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
 	    		AccessGrant accessGrant = new AccessGrant(socialAuthRequest.getCredentials().toString());
 	    		Connection<?> conn = oauth2ConnFactory.createConnection(accessGrant);
 	    		UserProfile userProfile = conn.fetchUserProfile();
-	    		String email = userProfile.getEmail();
+	    		String email = usernameExtractor.extractUsername(userProfile);
 	    		DynamicUserDetails userDetails = getUserDetails(email);
 	    		if (userDetails == null) {
 	    			throw new BadCredentialsException("Bad credentials");
@@ -69,6 +71,10 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
 	
 	public void setSocialUserDetailsChecker(DynamicUserDetailsChecker socialUserDetailsChecker) {
 		this.socialUserDetailsChecker = socialUserDetailsChecker;
+	}
+	
+	public void setUsernameExtractor(UsernameExtractor usernameExtractor) {
+		this.usernameExtractor = usernameExtractor;
 	}
 
 	private DynamicUserDetails getUserDetails(String email) {

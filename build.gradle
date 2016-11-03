@@ -24,6 +24,7 @@ dependencies {
     
     testCompile "junit:junit:${junit_version}"
     testCompile "org.mockito:mockito-core:${mockito_version}"    
+    testCompile "javax.servlet:javax.servlet-api:${servlet_api_version}"
 }
 
 task wrapper(type: Wrapper) {
