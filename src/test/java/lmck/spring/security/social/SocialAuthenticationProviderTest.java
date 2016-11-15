@@ -39,7 +39,7 @@ public class SocialAuthenticationProviderTest {
 	@Mock @SuppressWarnings("rawtypes")
 	private Connection connection;
 
-	private SocialAuthenticationToken authRequest = new SocialAuthenticationToken("token1", "google");				
+	private OAuth2AuthenticationToken authRequest = new OAuth2AuthenticationToken("token1", "google");				
 	private DynamicUserDetails userDetails = new DefaultDynamicUserDetails("james.woolimooloo@gmail.com", "", true, "google", 
 			Arrays.asList(new SimpleGrantedAuthority("role1")), Arrays.asList(new SimpleGrantedAuthority("role2")));
 
@@ -61,8 +61,8 @@ public class SocialAuthenticationProviderTest {
 		Authentication auth = socialAuthenticationProvider.authenticate(authRequest);
 		
 		//
-		assertTrue(auth instanceof SocialAuthenticationToken);
-		SocialAuthenticationToken resultSocialAuthToken = (SocialAuthenticationToken) auth;
+		assertTrue(auth instanceof OAuth2AuthenticationToken);
+		OAuth2AuthenticationToken resultSocialAuthToken = (OAuth2AuthenticationToken) auth;
 		assertEquals(userDetails, resultSocialAuthToken.getPrincipal());
 		assertEquals("token1", resultSocialAuthToken.getCredentials());
 		assertEquals(Arrays.asList(new SimpleGrantedAuthority("role1"), new SimpleGrantedAuthority("role2")), 

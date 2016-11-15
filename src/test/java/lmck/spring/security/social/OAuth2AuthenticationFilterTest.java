@@ -18,7 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SocialAuthenticationFilterTest {
+public class OAuth2AuthenticationFilterTest {
 
 	@Mock
 	private AuthenticationManager authenticationManager;
@@ -42,20 +42,20 @@ public class SocialAuthenticationFilterTest {
 	@Test
 	public void doFilter_validToken_shouldPopulateSecurityContextAndProceed() throws Exception {
 		// given
-		SocialAuthenticationToken authRequest = new SocialAuthenticationToken("token1", "google");
+		OAuth2AuthenticationToken authRequest = new OAuth2AuthenticationToken("token1", "google");
 		DefaultDynamicUserDetails userDetails = new DefaultDynamicUserDetails("user1@example.com", "", true, "google", null, null);
-		SocialAuthenticationToken authResult = new SocialAuthenticationToken(userDetails, "token1", "google", null);
+		OAuth2AuthenticationToken authResult = new OAuth2AuthenticationToken(userDetails, "token1", "google", null);
 		when(request.getHeader(authorizationHeaderName)).thenReturn("Bearer token1");
 		when(request.getHeader(providerHeaderName)).thenReturn("google");
 		when(authenticationManager.authenticate(authRequest)).thenReturn(authResult);
-		SocialAuthenticationFilter socialAuthenticationFilter = new SocialAuthenticationFilter(authenticationManager, 
+		OAuth2AuthenticationFilter socialAuthenticationFilter = new OAuth2AuthenticationFilter(authenticationManager, 
 				authorizationHeaderName, providerHeaderName, authorizationMethodPrefix);
 		
 		// when
 		socialAuthenticationFilter.doFilter(request, response, chain);
 			
 		// then
-		SocialAuthenticationToken storedAuthToken = (SocialAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+		OAuth2AuthenticationToken storedAuthToken = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
 		assertEquals(storedAuthToken, authResult);
 		verify(chain).doFilter(request, response);
 	}
@@ -64,7 +64,7 @@ public class SocialAuthenticationFilterTest {
 	public void doFilter_noAuthorizationHeader_shouldProceed() throws Exception {
 		// given
 		when(request.getHeader(authorizationHeaderName)).thenReturn(null);
-		SocialAuthenticationFilter socialAuthenticationFilter = new SocialAuthenticationFilter(authenticationManager, 
+		OAuth2AuthenticationFilter socialAuthenticationFilter = new OAuth2AuthenticationFilter(authenticationManager, 
 				authorizationHeaderName, providerHeaderName, authorizationMethodPrefix);
 		
 		// when
@@ -80,7 +80,7 @@ public class SocialAuthenticationFilterTest {
 		// given
 		when(request.getHeader(authorizationHeaderName)).thenReturn("Bearer token1");
 		when(request.getHeader(providerHeaderName)).thenReturn(null);
-		SocialAuthenticationFilter socialAuthenticationFilter = new SocialAuthenticationFilter(authenticationManager, 
+		OAuth2AuthenticationFilter socialAuthenticationFilter = new OAuth2AuthenticationFilter(authenticationManager, 
 				authorizationHeaderName, providerHeaderName, authorizationMethodPrefix);
 		
 		// when
@@ -93,11 +93,11 @@ public class SocialAuthenticationFilterTest {
 	@Test
 	public void doFilter_authenticationException_shouldNotProceedAndRespond401() throws Exception {
 		// given
-		SocialAuthenticationToken authRequest = new SocialAuthenticationToken("token1", "google");
+		OAuth2AuthenticationToken authRequest = new OAuth2AuthenticationToken("token1", "google");
 		when(request.getHeader(authorizationHeaderName)).thenReturn("Bearer token1");
 		when(request.getHeader(providerHeaderName)).thenReturn("google");
 		when(authenticationManager.authenticate(authRequest)).thenThrow(Exception.class);
-		SocialAuthenticationFilter socialAuthenticationFilter = new SocialAuthenticationFilter(authenticationManager, 
+		OAuth2AuthenticationFilter socialAuthenticationFilter = new OAuth2AuthenticationFilter(authenticationManager, 
 				authorizationHeaderName, providerHeaderName, authorizationMethodPrefix);
 		
 		// when
@@ -111,11 +111,11 @@ public class SocialAuthenticationFilterTest {
 	@Test
 	public void doFilter_nullAuthenticationResult_shouldNotProceedAndRespond401() throws Exception {
 		// given
-		SocialAuthenticationToken authRequest = new SocialAuthenticationToken("token1", "google");
+		OAuth2AuthenticationToken authRequest = new OAuth2AuthenticationToken("token1", "google");
 		when(request.getHeader(authorizationHeaderName)).thenReturn("Bearer token1");
 		when(request.getHeader(providerHeaderName)).thenReturn("google");
 		when(authenticationManager.authenticate(authRequest)).thenThrow(Exception.class);
-		SocialAuthenticationFilter socialAuthenticationFilter = new SocialAuthenticationFilter(authenticationManager, 
+		OAuth2AuthenticationFilter socialAuthenticationFilter = new OAuth2AuthenticationFilter(authenticationManager, 
 				authorizationHeaderName, providerHeaderName, authorizationMethodPrefix);
 		
 		// when

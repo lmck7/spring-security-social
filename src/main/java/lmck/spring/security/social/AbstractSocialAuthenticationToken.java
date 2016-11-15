@@ -1,5 +1,6 @@
 package lmck.spring.security.social;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
@@ -7,33 +8,33 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public class SocialAuthenticationToken extends AbstractAuthenticationToken {
+public abstract class AbstractSocialAuthenticationToken<T extends Serializable> extends AbstractAuthenticationToken {
 
-	private static final long serialVersionUID = 8511889617632566051L;
+	private static final long serialVersionUID = 7396070464430273398L;
 	private UserDetails userDetails;
-	private String authenticationToken;
+	private T authToken;
 	private String provider;
 	
-	public SocialAuthenticationToken(String authenticationToken, String provider) {
+	public AbstractSocialAuthenticationToken(T authToken, String provider) {
 		super(null);
-		this.authenticationToken = authenticationToken;
+		this.authToken = authToken;
 		this.provider = provider;
 		setAuthenticated(false);
 	}
 	
-	public SocialAuthenticationToken(UserDetails userDetails, 
-			String authenticationToken, String provider,
+	public AbstractSocialAuthenticationToken(UserDetails userDetails, 
+			T authToken, String provider,
 			Collection<? extends GrantedAuthority> authorities) {
 		super(authorities);
 		this.userDetails = userDetails;
-		this.authenticationToken = authenticationToken;
+		this.authToken = authToken;
 		this.provider = provider;
 		setAuthenticated(true);
 	}
-	
+
 	@Override
-	public Object getCredentials() {
-		return authenticationToken;
+	public T getCredentials() {
+		return authToken;
 	}
 
 	@Override
@@ -56,10 +57,11 @@ public class SocialAuthenticationToken extends AbstractAuthenticationToken {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof SocialAuthenticationToken)) {
+		if (!(obj instanceof AbstractSocialAuthenticationToken)) {
 			return false;
 		}
-		SocialAuthenticationToken test = (SocialAuthenticationToken) obj;
+		@SuppressWarnings("unchecked")
+		AbstractSocialAuthenticationToken<T> test = (AbstractSocialAuthenticationToken<T>) obj;
 		if (!StringUtils.equals(provider, test.provider)) {
 			return false;
 		}

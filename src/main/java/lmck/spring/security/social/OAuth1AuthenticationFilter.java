@@ -18,48 +18,50 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-public class SocialAuthenticationFilter extends OncePerRequestFilter {
+public class OAuth1AuthenticationFilter extends OncePerRequestFilter {
 
-	private AuthenticationManager authenticationManager;
-	private final String authorizationHeaderName;
+	private final AuthenticationManager authenticationManager;
+	private final String oauthTokenHeaderName;
+	private final String oauthTokenSecretHeaderName;
 	private final String providerHeaderName;
-	private final String authorizationMethodPrefix;
-
-	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	public SocialAuthenticationFilter(AuthenticationManager authenticationManager,
-			String authorizationHeaderName, String providerHeaderName,
-			String authorizationMethodPrefix) {
+	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	public OAuth1AuthenticationFilter(AuthenticationManager authenticationManager,
+			String oauthTokenHeaderName, 
+			String oauthTokenSecretHeaderName,
+			String providerHeaderName) {
 		super();
 		this.authenticationManager = authenticationManager;
-		this.authorizationHeaderName = authorizationHeaderName;
+		this.oauthTokenHeaderName = oauthTokenHeaderName;
+		this.oauthTokenSecretHeaderName = oauthTokenSecretHeaderName;
 		this.providerHeaderName = providerHeaderName;
-		this.authorizationMethodPrefix = authorizationMethodPrefix;
 	}
-
+	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request,
 			HttpServletResponse response, FilterChain chain)
 					throws IOException, ServletException {
 
-		String header = request.getHeader(authorizationHeaderName);
-		String provider = request.getHeader(providerHeaderName);
+		String oauthTokenHeader = request.getHeader(oauthTokenHeaderName);
+		String oauthSecretTokenHeader = request.getHeader(oauthTokenSecretHeaderName);
+		String providerHeader = request.getHeader(providerHeaderName);
 
-		if (header == null || !header.startsWith(authorizationMethodPrefix) || StringUtils.isBlank(provider)) {
+		if (StringUtils.isBlank(oauthTokenHeader) || StringUtils.isBlank(oauthSecretTokenHeader) || 
+				StringUtils.isBlank(providerHeader)) {
 			chain.doFilter(request, response);
 			return;
 		}
 		
-		String authenticationToken = StringUtils.substringAfter(header, authorizationMethodPrefix);
-
 		try {
 			log.debug(
-				String.format("Social authentication authorization header found with token %s", 
-					authenticationToken));
-					
-			if (authenticationIsRequired(authenticationToken)) {
-				SocialAuthenticationToken authRequest = 
-						new SocialAuthenticationToken(authenticationToken, provider);
+				String.format("OAuth1 social authentication authorization header found with token %s", 
+					oauthTokenHeader));
+			
+			OAuth1Token oauthToken = new OAuth1Token(oauthTokenHeader, oauthSecretTokenHeader);
+			
+			if (authenticationIsRequired(oauthToken)) {
+				OAuth1AuthenticationToken authRequest = new OAuth1AuthenticationToken(oauthToken, providerHeader);
 				Authentication authResult = this.authenticationManager.authenticate(authRequest);
 				if (authResult == null) {
 					throw new BadCredentialsException("Bad credentials");
@@ -78,13 +80,13 @@ public class SocialAuthenticationFilter extends OncePerRequestFilter {
 		chain.doFilter(request, response);
 	}
 
-	private boolean authenticationIsRequired(String authenticationToken) {
+	private boolean authenticationIsRequired(OAuth1Token authenticationToken) {
 		Authentication existingAuth = SecurityContextHolder.getContext()
 				.getAuthentication();
 		if (existingAuth == null || !existingAuth.isAuthenticated()) {
 			return true;
 		}
-		if (existingAuth instanceof SocialAuthenticationToken
+		if (existingAuth instanceof OAuth1AuthenticationToken 
 				&& !existingAuth.getCredentials().equals(authenticationToken)) {
 			return true;
 		}

@@ -9,38 +9,34 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class SocialSecurityConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
 	private String authorizationHeaderName = "Authorization";
-	private String providerHeaderName = "Provider";
 	private String authorizationMethodPrefix = "Bearer ";
+	private String oauth1TokenHeaderName = "oauth_token";
+	private String oauth1TokenSecretHeaderName = "oauth_token_secret";
+	private String providerHeaderName = "Provider";
 	
 	protected SocialSecurityConfigurer() {}
 
-	public static SocialSecurityConfigurer begin() {
+	public static SocialSecurityConfigurer create() {
 		return new SocialSecurityConfigurer();
-	}
-	
-	public SocialSecurityConfigurer authorizationHeaderName(String authorizationHeaderName) {
-		this.authorizationHeaderName = authorizationHeaderName; 
-		return this;
 	}
 	
 	public SocialSecurityConfigurer providerHeaderName(String providerHeaderName) {
 		this.providerHeaderName = providerHeaderName;
 		return this;
 	}
-	
-	public SocialSecurityConfigurer authorizationMethodPrefix(String authorizationMethodPrefix) {
-		this.authorizationMethodPrefix = authorizationMethodPrefix;
-		return this;
-	}
-	
+		
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-		SocialAuthenticationFilter socialAuthenticationFilter = 
-				new SocialAuthenticationFilter(authenticationManager, authorizationHeaderName, 
+		OAuth2AuthenticationFilter oauth2AuthenticationFilter = 
+				new OAuth2AuthenticationFilter(authenticationManager, authorizationHeaderName, 
 						providerHeaderName, authorizationMethodPrefix);
-		socialAuthenticationFilter = postProcess(socialAuthenticationFilter);
-		http.addFilterAfter(socialAuthenticationFilter, BasicAuthenticationFilter.class);
+		oauth2AuthenticationFilter = postProcess(oauth2AuthenticationFilter);
+		OAuth1AuthenticationFilter oauth1AuthenticationFilter =
+				new OAuth1AuthenticationFilter(authenticationManager, oauth1TokenHeaderName, 
+						oauth1TokenSecretHeaderName, providerHeaderName);
+		http.addFilterAfter(oauth2AuthenticationFilter, BasicAuthenticationFilter.class);
+		http.addFilterAfter(oauth1AuthenticationFilter, BasicAuthenticationFilter.class);
 	}
 	
 }

@@ -11,21 +11,21 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-public class SocialAuthenticationTokenTest {
+public class OAuth2AuthenticationTokenTest {
 
 	private List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("role1"));
 	private List<GrantedAuthority> groupAuthorities = Arrays.asList(new SimpleGrantedAuthority("role2"));
 	private DynamicUserDetails userDetails = new DefaultDynamicUserDetails("username1", "password1", 
 		true, "google", 
 		authorities, groupAuthorities);		
-	private SocialAuthenticationToken socialAuthToken = new SocialAuthenticationToken(userDetails, "token1", 
+	private OAuth2AuthenticationToken socialAuthToken = new OAuth2AuthenticationToken(userDetails, "token1", 
 		"google", userDetails.getAuthorities());	
 	
 	@Test
 	public void equals_sameTypeAndData_shouldReturnTrue() {
 		// given
-		SocialAuthenticationToken socialAuthTokenCompare = 
-				new SocialAuthenticationToken(userDetails, "token1", "google", userDetails.getAuthorities());
+		OAuth2AuthenticationToken socialAuthTokenCompare = 
+				new OAuth2AuthenticationToken(userDetails, "token1", "google", userDetails.getAuthorities());
 		
 		// when 
 		boolean result = socialAuthToken.equals(socialAuthTokenCompare);
@@ -37,8 +37,8 @@ public class SocialAuthenticationTokenTest {
 	@Test
 	public void equals_differentProvider_shouldReturnFalse() {
 		// given
-		SocialAuthenticationToken socialAuthTokenCompare = 
-				new SocialAuthenticationToken(userDetails, "token1", "facebook", userDetails.getAuthorities());
+		OAuth2AuthenticationToken socialAuthTokenCompare = 
+				new OAuth2AuthenticationToken(userDetails, "token1", "facebook", userDetails.getAuthorities());
 		
 		// when 
 		boolean result = socialAuthToken.equals(socialAuthTokenCompare);
