@@ -77,7 +77,7 @@ public class SocialAuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public boolean supports(Class<?> authentication) {
-		return AbstractAuthenticationToken.class.isAssignableFrom(authentication);
+		return AbstractSocialAuthenticationToken.class.isAssignableFrom(authentication);
 	}
 	
 	public void setSocialUserDetailsChecker(DynamicUserDetailsChecker socialUserDetailsChecker) {
